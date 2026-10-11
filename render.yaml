@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: nexora
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_EMAIL
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
