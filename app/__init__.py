@@ -27,3 +27,7 @@ def create_app():
     
 
     return app
+
+
+# Default instance for WSGI servers (so both `gunicorn app:app` and `gunicorn run:app` work)
+app = create_app()
