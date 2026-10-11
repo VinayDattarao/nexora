@@ -1984,7 +1984,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             company_location: companyLocation,
                             company_description: companyDescription
                         },
-                        emailRedirectTo: "{{ url_for('auth.emlogin', _external=True) }}"
+                        emailRedirectTo: window.location.origin + "/auth/emlogin"
                     }
                 });
 
