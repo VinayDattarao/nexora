@@ -215,11 +215,12 @@ def api_forgot_password():
         return jsonify({"error": "Supabase configuration is missing"}), 500
 
     # Call Supabase Admin API to generate recovery link
+    callback_url = request.host_url.rstrip("/") + "/auth/callback"
     admin_url = f"{supabase_url}/auth/v1/admin/generate_link"
     payload = json.dumps({
         "type": "recovery",
         "email": email,
-        "redirect_to": "http://127.0.0.1:5000/auth/callback"
+        "redirect_to": callback_url
     }).encode("utf-8")
 
     req = urllib.request.Request(admin_url, data=payload, headers={

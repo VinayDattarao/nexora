@@ -376,7 +376,7 @@ P{% extends "base.html" %}
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "http://127.0.0.1:5000/auth/callback"
+                    redirectTo: window.location.origin + "/auth/callback"
                 }
             });
 
@@ -433,7 +433,7 @@ P{% extends "base.html" %}
             } catch (err) {
                 // Fallback to Supabase client
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(emailInput, {
-                    redirectTo: "http://127.0.0.1:5000/auth/callback"
+                    redirectTo: window.location.origin + "/auth/callback"
                 });
                 btn.textContent = "Forgot Password?";
                 btn.style.pointerEvents = "auto";

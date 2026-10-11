@@ -486,7 +486,7 @@
             await supabaseClient.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "http://127.0.0.1:5000/auth/callback"
+                    redirectTo: window.location.origin + "/auth/callback"
                 }
             });
 
@@ -547,7 +547,7 @@
                                 role: "job_seeker",
                                 password_set: true
                             },
-                            emailRedirectTo: "http://127.0.0.1:5000/auth/login"
+                            emailRedirectTo: window.location.origin + "/auth/login"
                         }
                     });
 
