@@ -58,9 +58,26 @@
             return;
         }
 
+        // Started on the JOB SEEKER login (e.g. Google) but the account is an employer
+        if (intent === 'job_seeker' && isEmployer) {
+            handled = true;
+            clearIntent();
+            await supabaseClient.auth.signOut();
+            window.location.replace(
+                U.login + '?error_description=' +
+                encodeURIComponent('This Google account is registered as an Employer. Please login via Employer Login.')
+            );
+            return;
+        }
+
         clearIntent();
 
-        if (isEmployer) return go(U.employer);
+        if (isEmployer) {
+            try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
+            return go(U.employer);
+        }
+
+        try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
         if (!meta.password_set) return go(U.setpw);
         return go(U.seeker);
     }

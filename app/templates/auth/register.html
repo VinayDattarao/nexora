@@ -162,18 +162,25 @@
             </div>
 
 
+            <!-- Role Switcher Tabs -->
+            <div class="auth-role-tabs">
+                <a href="{{ url_for('auth.signup') }}" class="auth-role-tab active">
+                    <i data-lucide="user" style="width:14px;height:14px;"></i>
+                    <span>Job Seeker</span>
+                </a>
+                <a href="{{ url_for('auth.emregister') }}" class="auth-role-tab">
+                    <i data-lucide="building-2" style="width:14px;height:14px;"></i>
+                    <span>Employer</span>
+                </a>
+            </div>
+
             <!-- Heading -->
-
             <div class="form-heading">
-
-                <h2>
-                    Create Your Account
-                </h2>
-
-                <p>
-                    Join NEXORA as a job seeker
-                </p>
-
+                <div class="form-badge" style="background: rgba(43, 224, 190, 0.12); color: #0d9488; border: 1px solid rgba(43, 224, 190, 0.3);">
+                    JOB SEEKER REGISTRATION
+                </div>
+                <h2>Create Job Seeker Account</h2>
+                <p>Join NEXORA to explore opportunities and get hired</p>
             </div>
 
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Employer Login33333333333333333333333333333333333333333333333333333333333333 — NEXORA{% endblock %}
+{% block title %}Employer Login — NEXORA{% endblock %}
 
 {% block content %}
 
@@ -148,20 +148,24 @@
             </div>
 
 
+            <!-- Role Switcher Tabs -->
+            <div class="auth-role-tabs">
+                <a href="{{ url_for('auth.login') }}" class="auth-role-tab">
+                    <i data-lucide="user" style="width:14px;height:14px;"></i>
+                    <span>Job Seeker</span>
+                </a>
+                <a href="{{ url_for('auth.emlogin') }}" class="auth-role-tab active employer-active">
+                    <i data-lucide="building-2" style="width:14px;height:14px;"></i>
+                    <span>Employer</span>
+                </a>
+            </div>
+
             <div class="form-heading">
-
-                <div class="form-badge">
-                    EMPLOYER
+                <div class="form-badge" style="background: rgba(108, 92, 245, 0.12); color: #6C5CF5; border: 1px solid rgba(108, 92, 245, 0.3);">
+                    EMPLOYER PORTAL
                 </div>
-
-                <h2>
-                    Welcome Back
-                </h2>
-
-                <p>
-                    Login to manage your company and jobs
-                </p>
-
+                <h2>Employer Login</h2>
+                <p>Login to manage your job postings, candidates, and hiring pipeline</p>
             </div>
 
 

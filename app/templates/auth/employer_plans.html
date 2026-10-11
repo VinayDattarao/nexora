@@ -169,27 +169,6 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Auto-redirect job seekers to Seeker Plans unless explicitly browsing employer plans
-        if (window.supabaseClient) {
-            window.supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                if (session && session.user) {
-                    const meta = session.user.user_metadata || {};
-                    const role = meta.role;
-                    const hasEmployerId = !!meta.employer_id;
-                    const activePortal = localStorage.getItem("nx_current_role");
-                    const isEmployer = (activePortal === "employer") || 
-                                       (role === "employer") || 
-                                       (role === "both" && activePortal !== "job_seeker") ||
-                                       (hasEmployerId && activePortal !== "job_seeker");
-
-                    if (!isEmployer && !window.location.search.includes("view=employer")) {
-                        window.location.replace("{{ url_for('auth.seekerplans') }}");
-                        return;
-                    }
-                }
-            });
-        }
-
         const modal = document.getElementById("empPlanPreviewModal");
         const modalTitle = document.getElementById("empModalPlanTitle");
         const modalDesc = document.getElementById("empModalPlanDesc");

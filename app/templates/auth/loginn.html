@@ -1,6 +1,6 @@
-P{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Login — NEXORA{% endblock %}
+{% block title %}Job Seeker Login — NEXORA{% endblock %}
 
 {% block content %}
 
@@ -162,18 +162,25 @@ P{% extends "base.html" %}
                 </div>
 
 
+                <!-- Role Switcher Tabs -->
+                <div class="auth-role-tabs">
+                    <a href="{{ url_for('auth.login') }}" class="auth-role-tab active">
+                        <i data-lucide="user" style="width:14px;height:14px;"></i>
+                        <span>Job Seeker</span>
+                    </a>
+                    <a href="{{ url_for('auth.emlogin') }}" class="auth-role-tab">
+                        <i data-lucide="building-2" style="width:14px;height:14px;"></i>
+                        <span>Employer</span>
+                    </a>
+                </div>
+
                 <!-- Heading -->
-
                 <div class="form-heading">
-
-                    <h2>
-                        Welcome Back 👋
-                    </h2>
-
-                    <p>
-                        Login to your NEXORA account
-                    </p>
-
+                    <div class="form-badge" style="background: rgba(43, 224, 190, 0.12); color: #0d9488; border: 1px solid rgba(43, 224, 190, 0.3);">
+                        JOB SEEKER PORTAL
+                    </div>
+                    <h2>Job Seeker Login</h2>
+                    <p>Access your applications, resume, and matched jobs</p>
                 </div>
 
 
@@ -372,6 +379,7 @@ P{% extends "base.html" %}
         });
 
         document.getElementById("google-login").addEventListener("click", async () => {
+            try { localStorage.setItem("nx_login_intent", "job_seeker"); } catch (_) {}
 
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: "google",

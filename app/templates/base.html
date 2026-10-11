@@ -36,15 +36,7 @@
             <div class="nexora-main-links" aria-label="Main navigation">
                 <a href="{{ url_for('main.jobs') }}" class="nexora-nav-link">Find Jobs</a>
                 <a href="{{ url_for('main.jobs') }}" class="nexora-nav-link">Companies</a>
-                <a href="{{ url_for('auth.seekerplans') }}" id="navPricingLink" class="nexora-nav-link">Pricing</a>
-                <script>
-                    try {
-                        if (localStorage.getItem('nx_current_role') === 'employer') {
-                            const _pl = document.getElementById('navPricingLink');
-                            if (_pl) _pl.href = "{{ url_for('auth.employerplans') }}";
-                        }
-                    } catch(_) {}
-                </script>
+                <a href="{{ url_for('auth.seekerplans') }}" id="navPricingLink" class="nexora-nav-link">Plans & Pricing</a>
             </div>
 
             <!-- Authentication / Employer navigation -->
@@ -52,7 +44,7 @@
 
                 <!-- User Login -->
                 <a href="{{ url_for('auth.login') }}" class="nexora-login-link">
-                    Login
+                    Job Seeker Login
                 </a>
 
                 <!-- User Register -->
@@ -79,11 +71,6 @@
                         role="menu"
                         aria-hidden="true">
 
-                        <!-- Empty for now; content can be added later -->
-                        <a href="{{ url_for('auth.employerplans') }}" class="nexora-dropdown-item" role="menuitem">
-                            <span>Employer Plans</span>
-                        </a>
-
                         <a href="{{ url_for('auth.emlogin') }}"
                            class="nexora-dropdown-item"
                            role="menuitem">
@@ -96,13 +83,17 @@
                             <span>Employer Register</span>
                         </a>
 
+                        <a href="{{ url_for('auth.employerplans') }}" class="nexora-dropdown-item" role="menuitem">
+                            <span>Employer Hiring Plans</span>
+                        </a>
+
                     </div>
                 </div>
             </div>
 
             <!-- Mobile actions -->
             <div class="nexora-mobile-actions" style="visibility: hidden;">
-                <a href="{{ url_for('auth.login') }}" class="nexora-login-link">Login</a>
+                <a href="{{ url_for('auth.login') }}" class="nexora-login-link">Job Seeker</a>
                 <a href="{{ url_for('auth.signup') }}" class="nexora-register-btn">Register</a>
 
                 <div class="nexora-employer-menu" id="employerMenuMobile">
@@ -122,9 +113,9 @@
                         role="menu"
                         aria-hidden="true">
 
-                        <a href="{{ url_for('auth.employerplans')}}" class="nexora-dropdown-item" role="menuitem">Employer Plans</a>
                         <a href="{{ url_for('auth.emlogin') }}" class="nexora-dropdown-item" role="menuitem">Employer Login</a>
                         <a href="{{ url_for('auth.emregister') }}" class="nexora-dropdown-item" role="menuitem">Employer Register</a>
+                        <a href="{{ url_for('auth.employerplans')}}" class="nexora-dropdown-item" role="menuitem">Employer Hiring Plans</a>
 
                     </div>
                 </div>
@@ -218,15 +209,16 @@
                     const hasEmployerId = !!user.user_metadata?.employer_id;
                     const currentPortalRole = localStorage.getItem('nx_current_role');
 
-                    const isEmployer = (currentPortalRole === 'employer') || 
-                                       (role === 'employer') || 
-                                       (role === 'both' && currentPortalRole !== 'job_seeker') ||
-                                       (hasEmployerId && currentPortalRole !== 'job_seeker');
+                    // Ground-truth role check from user metadata:
+                    const isEmployer = (role === 'employer') || 
+                                       (role === 'both' && currentPortalRole === 'employer') ||
+                                       (hasEmployerId && role !== 'job_seeker');
 
                     let dashUrl = isEmployer ? "{{ url_for('auth.employerdashboard') }}" : "{{ url_for('auth.seekerdashboard') }}";
                     const pricingLink = document.getElementById('navPricingLink');
                     if (pricingLink) {
                         pricingLink.href = isEmployer ? "{{ url_for('auth.employerplans') }}" : "{{ url_for('auth.seekerplans') }}";
+                        pricingLink.textContent = isEmployer ? "Employer Plans" : "Job Seeker Plans";
                     }
 
                     const empId = (user.user_metadata?.employer_id || localStorage.getItem('nx_employer_id') || "").toUpperCase();
@@ -234,12 +226,17 @@
                     // updating the big screen buttons
                     if (desktopActions) {
                         desktopActions.innerHTML = `
-                            ${(isEmployer && empId) ? `
+                            ${isEmployer ? `
                             <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(108,92,245,0.12); border:1px solid rgba(108,92,245,0.35); border-radius:10px; color:#A59BFF; font-family:monospace; font-size:12.5px; font-weight:700;" title="Verified Employer ID">
                                 <i data-lucide="shield-check" style="width:14px;height:14px; color:#6C5CF5;"></i>
-                                <span>ID: ${empId}</span>
+                                <span>ID: ${empId || 'EMPLOYER'}</span>
                             </span>
-                            ` : ''}
+                            ` : `
+                            <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.35); border-radius:10px; color:#2dd4bf; font-size:12.5px; font-weight:700;">
+                                <i data-lucide="user" style="width:14px;height:14px; color:#2dd4bf;"></i>
+                                <span>Job Seeker</span>
+                            </span>
+                            `}
                             <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
                             <a href="#" id="desktop-logout" class="nexora-register-btn" style="background:var(--rose)">Logout</a>
                         `;
@@ -267,12 +264,17 @@
                     // updating the phone screen buttons
                     if (mobileActions) {
                         mobileActions.innerHTML = `
-                            ${(isEmployer && empId) ? `
+                            ${isEmployer ? `
                             <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:rgba(108,92,245,0.12); border:1px solid rgba(108,92,245,0.35); border-radius:10px; color:#A59BFF; font-family:monospace; font-size:12px; font-weight:700;">
                                 <i data-lucide="shield-check" style="width:13px;height:13px; color:#6C5CF5;"></i>
-                                <span>ID: ${empId}</span>
+                                <span>ID: ${empId || 'EMPLOYER'}</span>
                             </span>
-                            ` : ''}
+                            ` : `
+                            <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.35); border-radius:10px; color:#2dd4bf; font-size:12px; font-weight:700;">
+                                <i data-lucide="user" style="width:13px;height:13px; color:#2dd4bf;"></i>
+                                <span>Job Seeker</span>
+                            </span>
+                            `}
                             <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
                             <a href="#" id="mobile-logout" class="nexora-register-btn" style="background:var(--rose)">Logout</a>
                         `;
@@ -289,13 +291,16 @@
                             }
                             try {
                                 Object.keys(localStorage).forEach(k => {
-                                    if (k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
+                                    if (k.startsWith('sb-') || k.includes('supabase') || k.startsWith('nx_')) localStorage.removeItem(k);
                                 });
                                 sessionStorage.clear();
                             } catch(_) {}
                             window.location.replace("{{ url_for('main.index') }}");
                         });
                     }
+                } else {
+                    // Not logged in: ensure stale portal role doesn't hijack views
+                    try { localStorage.removeItem('nx_current_role'); } catch(_) {}
                 }
                 
                 // unhide the buttons only after we know what state they are in so it doesnt look glitchy
