@@ -172,6 +172,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
         const modal = document.getElementById("planPreviewModal");
         const modalTitle = document.getElementById("modalPlanTitle");
         const modalDesc = document.getElementById("modalPlanDesc");

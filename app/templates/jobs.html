@@ -19,14 +19,8 @@
       </p>
     </div>
 
-    <!-- For Employers CTA -->
-    <div class="flex items-center gap-3">
-      <a href="{{ url_for('main.post_job') }}" class="btn btn-accent inline-flex items-center gap-2">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i> Post a Job
-      </a>
-      <a href="{{ url_for('auth.employerplans') }}" class="btn btn-outline inline-flex items-center gap-2">
-        <i data-lucide="building-2" class="w-4 h-4"></i> Hiring Plans
-      </a>
+    <!-- Dynamic Role CTAs -->
+    <div id="jobsHeroCtas" class="flex items-center gap-3" style="visibility: hidden;">
     </div>
   </div>
 
@@ -219,6 +213,66 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     if (countEl) countEl.textContent = visibleCount;
+  }
+
+  // Handle URL query parameter ?search=
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchParam = urlParams.get("search");
+  if (searchParam && searchInput) {
+    searchInput.value = searchParam;
+    filterJobs();
+  }
+
+  // Inject Role-Appropriate Hero CTAs (No Employer CTAs for Job Seekers!)
+  const ctaContainer = document.getElementById("jobsHeroCtas");
+  if (ctaContainer) {
+    const sb = window.supabaseClient || (typeof supabaseClient !== "undefined" ? supabaseClient : null);
+    const renderCtas = (session) => {
+      const currentRole = localStorage.getItem("nx_current_role");
+      const isEmployer = (currentRole === "employer");
+      if (session) {
+        if (isEmployer) {
+          ctaContainer.innerHTML = `
+            <a href="{{ url_for('main.post_job') }}" class="btn btn-accent inline-flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Post a Job
+            </a>
+            <a href="{{ url_for('auth.employerplans') }}" class="btn btn-outline inline-flex items-center gap-2">
+              <i data-lucide="building-2" class="w-4 h-4"></i> Hiring Plans
+            </a>
+          `;
+        } else {
+          ctaContainer.innerHTML = `
+            <a href="{{ url_for('auth.seekerdashboard') }}" class="btn btn-accent inline-flex items-center gap-2">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Seeker Dashboard
+            </a>
+            <a href="{{ url_for('auth.seekerplans') }}" class="btn btn-outline inline-flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> Pro Seeker Plans
+            </a>
+          `;
+        }
+      } else {
+        ctaContainer.innerHTML = `
+          <a href="{{ url_for('auth.seekerplans') }}" class="btn btn-accent inline-flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4"></i> Job Seeker Plans
+          </a>
+          <a href="{{ url_for('auth.employerplans') }}" class="btn btn-outline inline-flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4"></i> Employer Plans
+          </a>
+        `;
+      }
+      ctaContainer.style.visibility = "visible";
+      if (window.lucide) window.lucide.createIcons({ root: ctaContainer });
+    };
+
+    if (sb) {
+      sb.auth.getSession().then(({ data: { session } }) => {
+        renderCtas(session);
+      }).catch(() => {
+        renderCtas(null);
+      });
+    } else {
+      renderCtas(null);
+    }
   }
 
   searchInput?.addEventListener("input", filterJobs);

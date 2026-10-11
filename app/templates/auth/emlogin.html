@@ -339,6 +339,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
+        try { localStorage.setItem("nx_login_intent", "employer"); } catch(_) {}
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
             const currentPortal = localStorage.getItem("nx_current_role");
@@ -352,6 +353,10 @@
 
     employerLoginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
+        try {
+            localStorage.setItem("nx_login_intent", "employer");
+            localStorage.setItem("nx_current_role", "employer");
+        } catch(_) {}
 
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
@@ -424,7 +429,10 @@
     // remembered so /auth/callback can check this Google account really
     // belongs to an employer before letting it into the employer dashboard.
     document.getElementById("google-login").addEventListener("click", async () => {
-        try { localStorage.setItem("nx_login_intent", "employer"); } catch (err) {}
+        try {
+            localStorage.setItem("nx_login_intent", "employer");
+            localStorage.setItem("nx_current_role", "employer");
+        } catch (err) {}
 
         const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: "google",

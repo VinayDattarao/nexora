@@ -202,7 +202,34 @@
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 const desktopActions = document.querySelector('.nexora-actions');
                 const mobileActions = document.querySelector('.nexora-mobile-actions');
-                
+                const path = (window.location.pathname || "").toLowerCase();
+
+                // 1. Strict Auth Page Isolation: Never display session pills, employer ID, or dashboard buttons on auth pages
+                const isAuthPage = path.includes('/auth/login') ||
+                                   path.includes('/auth/emlogin') ||
+                                   path.includes('/auth/signup') ||
+                                   path.includes('/auth/emregister') ||
+                                   path.includes('/auth/callback') ||
+                                   path.includes('/auth/reset_password') ||
+                                   path.includes('/auth/set_password');
+
+                if (isAuthPage) {
+                    if (path.includes('/auth/login') || path.includes('/auth/signup')) {
+                        try {
+                            localStorage.setItem('nx_current_role', 'job_seeker');
+                            localStorage.setItem('nx_login_intent', 'job_seeker');
+                        } catch(_) {}
+                    } else if (path.includes('/auth/emlogin') || path.includes('/auth/emregister')) {
+                        try {
+                            localStorage.setItem('nx_current_role', 'employer');
+                            localStorage.setItem('nx_login_intent', 'employer');
+                        } catch(_) {}
+                    }
+                    if (desktopActions) desktopActions.style.visibility = 'visible';
+                    if (mobileActions) mobileActions.style.visibility = 'visible';
+                    return;
+                }
+
                 if (session) {
                     const user = session.user;
                     const meta = user.user_metadata || {};
@@ -211,10 +238,19 @@
                     const empId = (meta.employer_id || localStorage.getItem('nx_employer_id') || "").toUpperCase();
                     const hasEmployerCapability = (role === 'employer' || role === 'both' || hasEmployerId);
 
+                    const isSeekerSection = path.includes('/seekerdashboard') || path.includes('/seekerplans');
+                    const isEmployerSection = path.includes('/employerdashboard') || path.includes('/employerplans') || path.includes('/post_job');
+
                     // Active portal determination:
                     let activePortal = localStorage.getItem('nx_current_role');
-                    if (!activePortal) {
-                        activePortal = (role === 'employer') ? 'employer' : 'job_seeker';
+                    if (isSeekerSection) {
+                        activePortal = 'job_seeker';
+                        try { localStorage.setItem('nx_current_role', 'job_seeker'); } catch(_) {}
+                    } else if (isEmployerSection) {
+                        activePortal = 'employer';
+                        try { localStorage.setItem('nx_current_role', 'employer'); } catch(_) {}
+                    } else if (!activePortal) {
+                        activePortal = (role === 'employer' && !meta.is_seeker) ? 'employer' : 'job_seeker';
                         try { localStorage.setItem('nx_current_role', activePortal); } catch(_) {}
                     }
 

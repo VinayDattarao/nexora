@@ -358,6 +358,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
+            try { localStorage.setItem("nx_login_intent", "job_seeker"); } catch(_) {}
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 const currentPortal = localStorage.getItem("nx_current_role");
@@ -379,7 +380,10 @@
         });
 
         document.getElementById("google-login").addEventListener("click", async () => {
-            try { localStorage.setItem("nx_login_intent", "job_seeker"); } catch (_) {}
+            try {
+                localStorage.setItem("nx_login_intent", "job_seeker");
+                localStorage.setItem("nx_current_role", "job_seeker");
+            } catch (_) {}
 
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: "google",
@@ -459,6 +463,10 @@
 
         loginForm.addEventListener("submit", async function (event) {
             event.preventDefault();
+            try {
+                localStorage.setItem("nx_login_intent", "job_seeker");
+                localStorage.setItem("nx_current_role", "job_seeker");
+            } catch(_) {}
 
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;

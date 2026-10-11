@@ -143,12 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".view-job").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (window.showToast) {
-        window.showToast("Opening job details...", "info");
-      }
-      setTimeout(() => {
-        window.location.href = jobsUrl;
-      }, 400);
+      const card = btn.closest(".job-card");
+      const jobTitle = card?.querySelector("h4")?.textContent?.trim() || "";
+      try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
+      const targetUrl = jobTitle ? `${jobsUrl}?search=${encodeURIComponent(jobTitle)}` : jobsUrl;
+      window.location.href = targetUrl;
     });
   });
 });
