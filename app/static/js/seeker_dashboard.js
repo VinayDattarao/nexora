@@ -50,9 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Supabase Auth Integration — Load user profile
   const client = getSupabase();
   if (client) {
-    try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
     client.auth.getSession().then(({ data: { session } }) => {
       if (session && session.user) {
+        const currentRole = localStorage.getItem("nx_current_role");
+        if (currentRole === "employer") {
+          window.location.replace("/auth/login?error_description=" + encodeURIComponent("Please log in with your Job Seeker account to access the Job Seeker Dashboard."));
+          return;
+        }
+        try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
         const user = session.user;
         const meta = user.user_metadata || {};
         const fullName = meta.full_name || meta.name || user.email?.split("@")[0] || "Job Seeker";

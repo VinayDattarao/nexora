@@ -24,20 +24,6 @@
         </p>
     </div>
 
-    <!-- Role Plan Switcher Tabs -->
-    <div style="display: flex; justify-content: center; margin: 10px 0 35px 0;">
-        <div style="background: rgba(255, 255, 255, 0.06); padding: 5px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); display: inline-flex; gap: 8px;">
-            <a href="{{ url_for('auth.seekerplans') }}?view=seeker" style="padding: 9px 22px; border-radius: 999px; font-size: 13.5px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; background: var(--purple-600); color: white; box-shadow: 0 4px 14px rgba(108, 92, 245, 0.35);">
-                <i data-lucide="user" style="width: 15px; height: 15px;"></i>
-                Job Seeker Plans
-            </a>
-            <a href="{{ url_for('auth.employerplans') }}?view=employer" style="padding: 9px 22px; border-radius: 999px; font-size: 13.5px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; background: transparent; color: var(--ink-muted);">
-                <i data-lucide="building-2" style="width: 15px; height: 15px;"></i>
-                Employer Hiring Plans
-            </a>
-        </div>
-    </div>
-
     <div class="plans-grid">
 
         <!-- FREE -->
@@ -158,15 +144,6 @@
             to { opacity: 1; transform: scale(1); }
         }
     </style>
-
-    <div class="plans-footer">
-        <p>
-            Need employer hiring solutions instead? 
-            <a href="{{ url_for('auth.employerplans') }}" style="color: #6C5CF5; text-decoration: underline; font-weight: 600;">
-                View Employer Hiring Plans →
-            </a>
-        </p>
-    </div>
 
 </div>
 

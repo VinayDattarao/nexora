@@ -35,17 +35,6 @@
 
         <div class="flex items-center gap-3">
             <a
-                href="{{ url_for('auth.seekerdashboard') }}"
-                id="empSwitchSeekerBtn"
-                class="btn outline"
-                onclick="try { localStorage.setItem('nx_current_role', 'job_seeker'); } catch(_){}"
-                style="border: 1px solid rgba(45, 212, 191, 0.4); color: #2dd4bf; background: rgba(45, 212, 191, 0.08); font-size: 13.5px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 10px 18px;"
-            >
-                <i data-lucide="user" class="w-4 h-4"></i>
-                Job Seeker Portal ➔
-            </a>
-
-            <a
                 href="{{ url_for('main.post_job') }}"
                 class="btn btn-accent"
             >
@@ -489,11 +478,16 @@
             var meta =
                 session.user.user_metadata || {};
 
+            var currentRole = localStorage.getItem("nx_current_role");
+            if (currentRole === "job_seeker") {
+                window.location.replace(urls.emlogin + "?error_description=" + encodeURIComponent("Please log in with your employer account to access the Employer Dashboard."));
+                return;
+            }
 
-            var isEmployerUser = (meta.role === "employer" || meta.role === "both" || !!meta.employer_id || localStorage.getItem("nx_current_role") === "employer");
+            var isEmployerUser = (meta.role === "employer" || meta.role === "both" || !!meta.employer_id || currentRole === "employer");
 
             if (!isEmployerUser) {
-                window.location.replace(urls.seeker);
+                window.location.replace(urls.emlogin + "?error_description=" + encodeURIComponent("Employer account required."));
                 return;
             }
             try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
