@@ -44,41 +44,38 @@
 
     async function routeSession(session) {
         const meta = session.user.user_metadata || {};
-        const isEmployer = meta.role === 'employer';
+        const role = meta.role;
+        const hasEmployerData = (role === 'employer' || role === 'both' || !!meta.employer_id);
 
-        // Started on the EMPLOYER login (e.g. Google) but the account is not an employer
-        if (intent === 'employer' && !isEmployer) {
-            handled = true;
+        if (intent === 'employer') {
             clearIntent();
-            await supabaseClient.auth.signOut();
-            window.location.replace(
-                U.emregister + '?error_description=' +
-                encodeURIComponent('For the first time logging in, we need a few details from you, so please fill them out manually to register. From next time you can directly login through Google.')
-            );
-            return;
+            if (hasEmployerData) {
+                try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
+                return go(U.employer);
+            } else {
+                // Connected with Google, needs company details to activate employer portal
+                handled = true;
+                window.location.replace(
+                    U.emregister + '?upgrade=true&email=' + encodeURIComponent(session.user.email || '') +
+                    '&error_description=' + encodeURIComponent('Your Google account is connected! Please complete your company profile to activate your Employer Portal.')
+                );
+                return;
+            }
         }
 
-        // Started on the JOB SEEKER login (e.g. Google) but the account is an employer
-        if (intent === 'job_seeker' && isEmployer) {
-            handled = true;
-            clearIntent();
-            await supabaseClient.auth.signOut();
-            window.location.replace(
-                U.login + '?error_description=' +
-                encodeURIComponent('This Google account is registered as an Employer. Please login via Employer Login.')
-            );
-            return;
-        }
-
+        // Job seeker intent (default):
         clearIntent();
-
-        if (isEmployer) {
-            try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
-            return go(U.employer);
+        if (role === 'employer') {
+            // Enable job seeker capabilities on this account seamlessly
+            try {
+                await supabaseClient.auth.updateUser({
+                    data: { role: 'both' }
+                });
+            } catch (_) {}
         }
 
         try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
-        if (!meta.password_set) return go(U.setpw);
+        if (!meta.password_set && session.user.app_metadata?.provider !== 'google') return go(U.setpw);
         return go(U.seeker);
     }
 

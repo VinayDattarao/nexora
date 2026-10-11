@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Supabase Auth Integration — Load user profile
   const client = getSupabase();
   if (client) {
+    try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
     client.auth.getSession().then(({ data: { session } }) => {
       if (session && session.user) {
         const user = session.user;

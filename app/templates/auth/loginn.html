@@ -360,8 +360,8 @@
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                const role = session.user?.user_metadata?.role;
-                if (role === "job_seeker" || role === "both") {
+                const currentPortal = localStorage.getItem("nx_current_role");
+                if (currentPortal === "job_seeker") {
                     window.location.replace("{{ url_for('auth.seekerdashboard') }}");
                 }
             }
@@ -490,12 +490,16 @@
 
                 console.log("Login successful:", data);
 
-                const role = data.user?.user_metadata?.role;
+                const meta = data.user?.user_metadata || {};
+                const role = meta.role;
 
+                // If registered as employer, seamlessly enable job seeker access (role: both)
                 if (role === "employer") {
-                    await supabaseClient.auth.signOut();
-                    window.location.replace("{{ url_for('auth.signup') }}?error_description=" + encodeURIComponent("You are registered as an Employer. Please fill out these details to register as a Job Seeker too."));
-                    return;
+                    try {
+                        await supabaseClient.auth.updateUser({
+                            data: { role: "both" }
+                        });
+                    } catch (_) {}
                 }
 
                 try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}

@@ -596,7 +596,12 @@
                         return;
                     }
 
-                    registeredData = updateData;
+                    try { localStorage.setItem("nx_current_role", "job_seeker"); } catch(_) {}
+                    showToast("Job seeker profile activated! Redirecting to your dashboard...", "success");
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('auth.seekerdashboard') }}";
+                    }, 1500);
+                    return;
                 }
 
                 console.log("Registration Successful:", data);

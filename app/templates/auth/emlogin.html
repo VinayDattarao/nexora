@@ -341,9 +341,8 @@
     document.addEventListener("DOMContentLoaded", async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-            const role = session.user?.user_metadata?.role;
-            if (role === "employer" || role === "both" || session.user?.user_metadata?.employer_id) {
-                try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
+            const currentPortal = localStorage.getItem("nx_current_role");
+            if (currentPortal === "employer") {
                 window.location.replace("{{ url_for('auth.employerdashboard') }}");
             }
         }
@@ -386,15 +385,14 @@
             // is an employer account — job seekers use the same
             // auth.users table. Check the role stored on the account
             // before letting them into the employer dashboard.
-            const role = data.user?.user_metadata?.role;
+            const meta = data.user?.user_metadata || {};
+            const role = meta.role;
+            const hasEmployerId = !!meta.employer_id;
 
-            if (role !== "employer" && role !== "both") {
-                console.warn("Non-employer account tried employer login:", role);
-
-                await supabaseClient.auth.signOut();
-
-                window.location.replace("{{ url_for('auth.emregister') }}?error_description=" + encodeURIComponent("You are registered as a Job Seeker. Please fill out these details to register as an Employer too."));
-
+            // If account has only job seeker profile, keep them authenticated and direct them to activate employer profile
+            if (role !== "employer" && role !== "both" && !hasEmployerId) {
+                try { localStorage.setItem("nx_current_role", "employer"); } catch(_) {}
+                window.location.replace("{{ url_for('auth.emregister') }}?upgrade=true&email=" + encodeURIComponent(email) + "&error_description=" + encodeURIComponent("Your account is verified! Please complete your company details to activate your Employer Portal."));
                 return;
             }
 

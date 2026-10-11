@@ -205,14 +205,20 @@
                 
                 if (session) {
                     const user = session.user;
-                    const role = user.user_metadata?.role;
-                    const hasEmployerId = !!user.user_metadata?.employer_id;
-                    const currentPortalRole = localStorage.getItem('nx_current_role');
+                    const meta = user.user_metadata || {};
+                    const role = meta.role;
+                    const hasEmployerId = !!meta.employer_id;
+                    const empId = (meta.employer_id || localStorage.getItem('nx_employer_id') || "").toUpperCase();
+                    const hasEmployerCapability = (role === 'employer' || role === 'both' || hasEmployerId);
 
-                    // Ground-truth role check from user metadata:
-                    const isEmployer = (role === 'employer') || 
-                                       (role === 'both' && currentPortalRole === 'employer') ||
-                                       (hasEmployerId && role !== 'job_seeker');
+                    // Active portal determination:
+                    let activePortal = localStorage.getItem('nx_current_role');
+                    if (!activePortal) {
+                        activePortal = (role === 'employer') ? 'employer' : 'job_seeker';
+                        try { localStorage.setItem('nx_current_role', activePortal); } catch(_) {}
+                    }
+
+                    const isEmployer = (activePortal === 'employer');
 
                     let dashUrl = isEmployer ? "{{ url_for('auth.employerdashboard') }}" : "{{ url_for('auth.seekerdashboard') }}";
                     const pricingLink = document.getElementById('navPricingLink');
@@ -220,8 +226,6 @@
                         pricingLink.href = isEmployer ? "{{ url_for('auth.employerplans') }}" : "{{ url_for('auth.seekerplans') }}";
                         pricingLink.textContent = isEmployer ? "Employer Plans" : "Job Seeker Plans";
                     }
-
-                    const empId = (user.user_metadata?.employer_id || localStorage.getItem('nx_employer_id') || "").toUpperCase();
 
                     // updating the big screen buttons
                     if (desktopActions) {
@@ -231,16 +235,40 @@
                                 <i data-lucide="shield-check" style="width:14px;height:14px; color:#6C5CF5;"></i>
                                 <span>ID: ${empId || 'EMPLOYER'}</span>
                             </span>
+                            <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
+                            <button id="desktop-switch-portal" style="background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.4); color:#2dd4bf; padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;" title="Switch to Job Seeker Portal">
+                                <i data-lucide="user" style="width:13px;height:13px;"></i>
+                                <span>Seeker Portal ➔</span>
+                            </button>
                             ` : `
                             <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.35); border-radius:10px; color:#2dd4bf; font-size:12.5px; font-weight:700;">
                                 <i data-lucide="user" style="width:14px;height:14px; color:#2dd4bf;"></i>
                                 <span>Job Seeker</span>
                             </span>
-                            `}
                             <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
+                            <button id="desktop-switch-portal" style="background:rgba(108,92,245,0.15); border:1px solid rgba(108,92,245,0.4); color:#c4b5fd; padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;" title="Switch to Employer Portal">
+                                <i data-lucide="building-2" style="width:13px;height:13px;"></i>
+                                <span>Employer Portal ➔</span>
+                            </button>
+                            `}
                             <a href="#" id="desktop-logout" class="nexora-register-btn" style="background:var(--rose)">Logout</a>
                         `;
                         if (window.lucide) window.lucide.createIcons({ root: desktopActions });
+
+                        document.getElementById('desktop-switch-portal')?.addEventListener('click', () => {
+                            if (isEmployer) {
+                                localStorage.setItem('nx_current_role', 'job_seeker');
+                                window.location.href = "{{ url_for('auth.seekerdashboard') }}";
+                            } else {
+                                localStorage.setItem('nx_current_role', 'employer');
+                                if (hasEmployerCapability) {
+                                    window.location.href = "{{ url_for('auth.employerdashboard') }}";
+                                } else {
+                                    window.location.href = "{{ url_for('auth.emregister') }}?upgrade=true";
+                                }
+                            }
+                        });
+
                         document.getElementById('desktop-logout').addEventListener('click', async (e) => {
                             e.preventDefault();
                             e.target.textContent = "Logging out...";
@@ -269,16 +297,38 @@
                                 <i data-lucide="shield-check" style="width:13px;height:13px; color:#6C5CF5;"></i>
                                 <span>ID: ${empId || 'EMPLOYER'}</span>
                             </span>
+                            <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
+                            <button id="mobile-switch-portal" style="background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.4); color:#2dd4bf; padding:5px 10px; border-radius:999px; font-size:11.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                                <span>Seeker ➔</span>
+                            </button>
                             ` : `
                             <span class="nexora-employer-id-pill" style="display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:rgba(43,224,190,0.12); border:1px solid rgba(43,224,190,0.35); border-radius:10px; color:#2dd4bf; font-size:12px; font-weight:700;">
                                 <i data-lucide="user" style="width:13px;height:13px; color:#2dd4bf;"></i>
-                                <span>Job Seeker</span>
+                                <span>Seeker</span>
                             </span>
-                            `}
                             <a href="${dashUrl}" class="nexora-login-link">Dashboard</a>
+                            <button id="mobile-switch-portal" style="background:rgba(108,92,245,0.15); border:1px solid rgba(108,92,245,0.4); color:#c4b5fd; padding:5px 10px; border-radius:999px; font-size:11.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                                <span>Employer ➔</span>
+                            </button>
+                            `}
                             <a href="#" id="mobile-logout" class="nexora-register-btn" style="background:var(--rose)">Logout</a>
                         `;
                         if (window.lucide) window.lucide.createIcons({ root: mobileActions });
+
+                        document.getElementById('mobile-switch-portal')?.addEventListener('click', () => {
+                            if (isEmployer) {
+                                localStorage.setItem('nx_current_role', 'job_seeker');
+                                window.location.href = "{{ url_for('auth.seekerdashboard') }}";
+                            } else {
+                                localStorage.setItem('nx_current_role', 'employer');
+                                if (hasEmployerCapability) {
+                                    window.location.href = "{{ url_for('auth.employerdashboard') }}";
+                                } else {
+                                    window.location.href = "{{ url_for('auth.emregister') }}?upgrade=true";
+                                }
+                            }
+                        });
+
                         document.getElementById('mobile-logout').addEventListener('click', async (e) => {
                             e.preventDefault();
                             e.target.textContent = "Logging out...";

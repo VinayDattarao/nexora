@@ -2074,9 +2074,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 showToast("Employer account verified! Your unique Employer ID is " + employerId + ".", "success");
 
+                const { data: { session: curSess } } = await supabaseClient.auth.getSession();
                 setTimeout(() => {
-                    window.location.href = "{{ url_for('auth.emlogin') }}";
-                }, 2500);
+                    if (curSess) {
+                        window.location.href = "{{ url_for('auth.employerdashboard') }}";
+                    } else {
+                        window.location.href = "{{ url_for('auth.emlogin') }}";
+                    }
+                }, 2000);
 
             } catch (error) {
                 console.error("Unexpected error while registering employer:", error);
